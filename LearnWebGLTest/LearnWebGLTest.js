@@ -108,38 +108,38 @@ function main(params) {
 
     const colors =[
         125, 80, 255, 255,
-        0, 180, 125, 255,
-        70, 80, 0, 255,
-        255, 0, 125, 255
+        0, 0, 125, 255,
+        70, 0, 0, 255,
+        255, 0, 0, 255
     ];
 
     
     // 创建一个大的缓冲
-    const arrayBuffer = new ArrayBuffer(positions.length*Float32Array.BYTES_PER_ELEMENT + colors.length);
-    const positionsBuffer = new Float32Array(arrayBuffer);
-    const colorsBuffer = new Uint8Array(arrayBuffer);
+    // const arrayBuffer = new ArrayBuffer(positions.length*Float32Array.BYTES_PER_ELEMENT + colors.length);
+    // const positionsBuffer = new Float32Array(arrayBuffer);
+    // const colorsBuffer = new Uint8Array(arrayBuffer);
     
     // 开始存顶点数据 positions
     // 偏移量 代表在缓冲区中的存储位置
-    let offset = 0; 
-    // i+2 的原因是 一个位置有两个属性
-    for (let i = 0; i < positions.length; i+=2) {
-        positionsBuffer[offset] = positions[i];
-        positionsBuffer[offset+1] = positions[i+1];
-        // 因为位置的分量 占两个float, 一个颜色分量占一个float, 所以这里是+=3
-        offset +=3;
-    }
+    // let offset = 0; 
+    // // i+2 的原因是 一个位置有两个属性
+    // for (let i = 0; i < positions.length; i+=2) {
+    //     positionsBuffer[offset] = positions[i];
+    //     positionsBuffer[offset+1] = positions[i+1];
+    //     // 因为位置的分量 占两个float, 一个颜色分量占一个float, 所以这里是+=3
+    //     offset +=3;
+    // }
 
     // 开始存颜色数据 colors
     // 开始时, 偏移为8, 因为位置占了 两个float
-    offset = 8;
-    for (let index = 0; index < colors.length; index+=4) {
-        colorsBuffer[offset] = colors[index];
-        colorsBuffer[offset+1] = colors[index+1];
-        colorsBuffer[offset+2] = colors[index+2];
-        colorsBuffer[offset+3] = colors[index+3];
-        offset +=12;
-    }
+    // offset = 8;
+    // for (let index = 0; index < colors.length; index+=4) {
+    //     colorsBuffer[offset] = colors[index];
+    //     colorsBuffer[offset+1] = colors[index+1];
+    //     colorsBuffer[offset+2] = colors[index+2];
+    //     colorsBuffer[offset+3] = colors[index+3];
+    //     offset +=12;
+    // }
 
     // 6. 创建顶点缓冲
     const vertexBuffer = gl.createBuffer();
@@ -148,9 +148,13 @@ function main(params) {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
     // 8. 初始化顶点缓冲buffer	// gl.bufferData
-    // gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(position_and_color), gl.STATIC_DRAW);
-    gl.bufferData(gl.ARRAY_BUFFER, arrayBuffer, gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+    // gl.bufferData(gl.ARRAY_BUFFER, arrayBuffer, gl.STATIC_DRAW);
 
+    const colorsBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Uint8Array(colors), gl.STATIC_DRAW);
+    
     // 9. 编写顶点索引
     const vertexIndex = [
         0,1,2,
@@ -222,10 +226,17 @@ function main(params) {
     // 19. 获取顶点位置属性在顶点着色器中的位置所以, 并激活
     const positionAttribLocation = gl.getAttribLocation(program, 'a_position');
     gl.enableVertexAttribArray(positionAttribLocation);
+    // 20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
+    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+    // 21.告诉属性如何获取数据
+    gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 0, 0);
 
     // 获取颜色属性的索引值
     const colorAttribLocation = gl.getAttribLocation(program, 'a_color');
     gl.enableVertexAttribArray(colorAttribLocation);
+    gl.bindBuffer(gl.ARRAY_BUFFER, colorsBuffer);
+    // 给颜色属性赋值
+    gl.vertexAttribPointer(colorAttribLocation, 4, gl.UNSIGNED_BYTE, true, 0, 0);
 
     // 获取 uniform 的顶点索引
     // const vertexUniformLocation = gl.getUniformLocation(program, 'u_color');
@@ -234,15 +245,7 @@ function main(params) {
     // 数组的形式
     // gl.uniform4fv(vertexUniformLocation, [0.5,0.3,0.5,1.0]);
 
-    // 20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
-    gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
-    // 21.告诉属性如何获取数据
-    // gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 24, 0);
-    gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 12, 0);
-    // 给颜色属性赋值
-    // gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 24, 8);
-    gl.vertexAttribPointer(colorAttribLocation, 4, gl.UNSIGNED_BYTE, true, 12, 8);
 
     // 22.开始渲染
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_BYTE, 0);
