@@ -70,18 +70,34 @@ function main(params) {
      */
     const vertexSource = `
         attribute vec2 a_position;
+        attribute vec4 a_color;
+        varying vec4 v_color;
         void main(){
+            v_color = a_color;
             gl_Position = vec4(a_position, 0.0, 1.0);
         }
     `;
     const vertexShader = createShader(gl, gl.VERTEX_SHADER, vertexSource);
 
     // 5. 编写顶点数据
-    const position = [
-        0.0,0.0,
-        0.5,0.0,
-        0.0,0.7,
-        0.5,0.7
+
+    /*
+        扩展顶点属性, 设置顶点颜色的第二种方法
+        webgl 中可以获得顶点着色器中输入的三个颜色值
+        在光栅化的时候根据这三个值进行插值
+        也就是如果三角形每个顶点的颜色都不一样
+        那么 webgl 会在顶点a 和顶点 b 之间进行像素插值
+        所以接下来我们给顶点着色器传顶点颜色值
+        让他按照我们给的值进行绘制
+        1. 顶点属性要增加一个颜色输入 a_color, 同时增加一个输出 v_color , 为了给片元着色器
+        2. 在函数中进行赋值 v_color = v_color;
+        3. 在片元着色中 增加颜色输入 v_color, 并且赋值给 gl_FragColor
+    */
+    const position_and_color = [
+        0.0,0.0,0.2,0.2,0.2,1,
+        0.5,0.0,0.7,0.8,0.9,1,
+        0.0,0.7,0.2,0.2,0.2,1,
+        0.5,0.7,0.7,0.8,0.9,1,
     ];
 
     // 6. 创建顶点缓冲
@@ -91,7 +107,7 @@ function main(params) {
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
     // 8. 初始化顶点缓冲buffer	// gl.bufferData
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(position), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(position_and_color), gl.STATIC_DRAW);
 
     // 9. 编写顶点索引
     const vertexIndex = [
@@ -130,9 +146,10 @@ function main(params) {
     precision highp float;
     // 让片元着色器 为所有的片元输出统一的颜色
     // 通过uniform 方式来传递颜色
-    uniform vec4 u_color;
+    // uniform vec4 u_color;
+    varying vec4 v_color;
     void main(){
-        gl_FragColor = u_color;
+        gl_FragColor = v_color;
     }`;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
     
@@ -164,18 +181,24 @@ function main(params) {
     const positionAttribLocation = gl.getAttribLocation(program, 'a_position');
     gl.enableVertexAttribArray(positionAttribLocation);
 
+    // 获取颜色属性的索引值
+    const colorAttribLocation = gl.getAttribLocation(program, 'a_color');
+    gl.enableVertexAttribArray(colorAttribLocation);
+
     // 获取 uniform 的顶点索引
-    const vertexUniformLocation = gl.getUniformLocation(program, 'u_color');
+    // const vertexUniformLocation = gl.getUniformLocation(program, 'u_color');
     // 向 uniform u_color 传递数据
     // gl.uniform4f(vertexUniformLocation, 0.5,0.3,0.9,1.0);
     // 数组的形式
-    gl.uniform4fv(vertexUniformLocation, [0.5,0.3,0.5,1.0]);
+    // gl.uniform4fv(vertexUniformLocation, [0.5,0.3,0.5,1.0]);
 
     // 20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
 
     // 21.告诉属性如何获取数据
-    gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 0, 0);
+    gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 24, 0);
+    // 给颜色属性赋值
+    gl.vertexAttribPointer(colorAttribLocation, 4, gl.FLOAT, false, 24, 8);
 
     // 22.开始渲染
     gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_BYTE, 0);
