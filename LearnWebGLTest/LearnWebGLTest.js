@@ -121,8 +121,10 @@ function main(params) {
     // 声明所有浮点型的精度
     precision highp float;
     // 让片元着色器 为所有的片元输出统一的颜色
+    // 通过uniform 方式来传递颜色
+    uniform vec4 u_color;
     void main(){
-        gl_FragColor = vec4(1, 0.5, 0.2, 1.0);
+        gl_FragColor = u_color;
     }`;
     const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fragmentSource);
     
@@ -153,6 +155,11 @@ function main(params) {
     // 19. 获取顶点位置属性在顶点着色器中的位置所以, 并激活
     const positionAttribLocation = gl.getAttribLocation(program, 'a_position');
     gl.enableVertexAttribArray(positionAttribLocation);
+
+    // 获取 uniform 的顶点索引
+    const vertexUniformLocation = gl.getUniformLocation(program, 'u_color');
+    // 向 uniform u_color 传递数据
+    gl.uniform4f(vertexUniformLocation, 0.5,0.3,0.9,1.0);
 
     // 20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
