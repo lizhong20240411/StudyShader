@@ -117,6 +117,14 @@ function main(params) {
 			- 获取编译状态(成功/失败, 如果失败, 打印失败信息并处理(删除))
      */
 
+    /*
+        uniform 是一种从 CPU 中的应用向 GPU 中的着色器发送数据的方式
+        但 uniform 和顶点属性有点不同
+        uniform 是全局的
+        意味着每一个 uniform 变量在每个着色程序中他是独一无二的
+        可以被着色程序的任意着色器在任意阶段访问
+        并且 uniform 会始终保持他自身的值 除非他被重置或者更新
+    */
     const fragmentSource = `
     // 声明所有浮点型的精度
     precision highp float;
@@ -159,7 +167,9 @@ function main(params) {
     // 获取 uniform 的顶点索引
     const vertexUniformLocation = gl.getUniformLocation(program, 'u_color');
     // 向 uniform u_color 传递数据
-    gl.uniform4f(vertexUniformLocation, 0.5,0.3,0.9,1.0);
+    // gl.uniform4f(vertexUniformLocation, 0.5,0.3,0.9,1.0);
+    // 数组的形式
+    gl.uniform4fv(vertexUniformLocation, [0.5,0.3,0.5,1.0]);
 
     // 20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
     gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
