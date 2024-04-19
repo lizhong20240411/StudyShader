@@ -1,0 +1,50 @@
+步骤
+	1. 创建 body
+	2. 创建画布 canvas, 设置画布长宽, 并添加到body
+	3. 获取 canvas 中的绘图上下文 gl // canvas.getContext('webgl2');
+		1). 开启面剔除(剔除背面,因为cocos 默认也是剔除背面) // gl.enable(gl.CULL_FACE);
+	4. 开始编辑顶点着色器
+		1). 定义一个着色器文本
+		2). 创建顶点着色器
+			- 创建着色器
+			- 编译着色器
+			- 获取编译状态(成功/失败, 如果失败, 打印失败信息并处理(删除))
+
+	
+	5. 编写顶点数据
+	6. 创建顶点缓冲
+	7. 绑定顶点缓冲
+	8. 初始化顶点缓冲buffer	// gl.bufferData
+
+	9. 编写顶点索引
+	10.创建索引缓冲
+	11.绑定索引缓冲
+	12.初始化索引缓冲buff
+
+	13.开始编辑片元着色器
+		1). 定义一个片元着色器文本
+		2). 创建片元着色器
+			- 创建着色器
+			- 编译着色器
+			- 获取编译状态(成功/失败, 如果失败, 打印失败信息并处理(删除))
+	14.创建着色程序(将顶点着色器 和 片元着色器 绑定到 着色程序上)
+		1). 创建着色器
+		2). 绑定着色程序
+			- gl.attachShader(program, vertexShader);
+			- gl.attachShader(program, fragmentShader);
+		3). link 绑定的着色程序
+			- gl.linkProgram(program);
+			- 获取编译状态(成功/失败, 如果失败, 打印失败信息并处理(删除))
+	15.创建视图窗口
+	16.设置清除画布颜色
+	17.清除画布(由于最终呈现在屏幕上的颜色都要从颜色缓冲中读取,因此每次绘制的时候都要清除, 否则容易出现花屏现象)
+	18.启用着色程序
+	19.获取顶点位置属性在顶点着色器中的位置所以, 并激活
+		- const positionAttribLocation = gl.getAttribLocation(program, 'a_position');
+   		- gl.enableVertexAttribArray(positionAttribLocation);
+   	20. 重新将顶点缓冲绑定到 ARRAY_BUFFER 上, 以确保当前 ARRAY_BUFFER 使用的缓存是我要的顶点缓冲
+   		- gl.bindBuffer(gl.ARRAY_BUFFER, vertexBuffer);
+   	21.告诉属性如何获取数据
+   		- gl.vertexAttribPointer(positionAttribLocation, 2, gl.FLOAT, false, 0, 0);
+   	22.开始渲染
+   		- gl.drawElements(gl.TRIANGLES, 6, gl.UNSIGNED_BYTE, 0);
